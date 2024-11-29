@@ -1,10 +1,6 @@
-import appRoot from 'app-root-path';
-
 import FormData from 'form-data';
 import _ from 'lodash';
 import { DateTime } from 'luxon';
-import * as fs from 'fs';
-import * as path from 'path';
 import { HttpClient } from '../common/HttpClient';
 import { checkIsDirectory, createDirectory, writeToFile } from '../utils';
 import { UrlClass } from './UrlClass';
@@ -40,14 +36,6 @@ import {
     IActivity
 } from './types/activity';
 
-let config: GCCredentials | undefined = undefined;
-
-try {
-    config = appRoot.require('/garmin.config.json');
-} catch (e) {
-    // Do nothing
-}
-
 export type EventCallback<T> = (data: T) => void;
 
 export interface GCCredentials {
@@ -72,7 +60,7 @@ export default class GarminConnect {
     private url: UrlClass;
     // private oauth1: OAuth;
     constructor(
-        credentials: GCCredentials | undefined = config,
+        credentials: GCCredentials,
         domain: GarminDomain = 'garmin.com'
     ) {
         if (!credentials) {
@@ -97,38 +85,44 @@ export default class GarminConnect {
         return this;
     }
     exportTokenToFile(dirPath: string): void {
-        if (!checkIsDirectory(dirPath)) {
-            createDirectory(dirPath);
-        }
-        // save oauth1 to json
-        if (this.client.oauth1Token) {
-            writeToFile(
-                path.join(dirPath, 'oauth1_token.json'),
-                JSON.stringify(this.client.oauth1Token)
-            );
-        }
-        if (this.client.oauth2Token) {
-            writeToFile(
-                path.join(dirPath, 'oauth2_token.json'),
-                JSON.stringify(this.client.oauth2Token)
-            );
-        }
+        console.error(
+            'Exporting token to file is not supported in Cloudflare Workers.'
+        );
+        // if (!checkIsDirectory(dirPath)) {
+        //     createDirectory(dirPath);
+        // }
+        // // save oauth1 to json
+        // if (this.client.oauth1Token) {
+        //     writeToFile(
+        //         path.join(dirPath, 'oauth1_token.json'),
+        //         JSON.stringify(this.client.oauth1Token)
+        //     );
+        // }
+        // if (this.client.oauth2Token) {
+        //     writeToFile(
+        //         path.join(dirPath, 'oauth2_token.json'),
+        //         JSON.stringify(this.client.oauth2Token)
+        //     );
+        // }
     }
     loadTokenByFile(dirPath: string): void {
-        if (!checkIsDirectory(dirPath)) {
-            throw new Error('loadTokenByFile: Directory not found: ' + dirPath);
-        }
-        let oauth1Data = fs.readFileSync(
-            path.join(dirPath, 'oauth1_token.json')
-        ) as unknown as string;
-        const oauth1 = JSON.parse(oauth1Data);
-        this.client.oauth1Token = oauth1;
+        console.error(
+            'Loading token from file is not supported in Cloudflare Workers.'
+        );
+        // if (!checkIsDirectory(dirPath)) {
+        //     throw new Error('loadTokenByFile: Directory not found: ' + dirPath);
+        // }
+        // let oauth1Data = fs.readFileSync(
+        //     path.join(dirPath, 'oauth1_token.json')
+        // ) as unknown as string;
+        // const oauth1 = JSON.parse(oauth1Data);
+        // this.client.oauth1Token = oauth1;
 
-        let oauth2Data = fs.readFileSync(
-            path.join(dirPath, 'oauth2_token.json')
-        ) as unknown as string;
-        const oauth2 = JSON.parse(oauth2Data);
-        this.client.oauth2Token = oauth2;
+        // let oauth2Data = fs.readFileSync(
+        //     path.join(dirPath, 'oauth2_token.json')
+        // ) as unknown as string;
+        // const oauth2 = JSON.parse(oauth2Data);
+        // this.client.oauth2Token = oauth2;
     }
     exportToken(): IGarminTokens {
         if (!this.client.oauth1Token || !this.client.oauth2Token) {
@@ -189,63 +183,69 @@ export default class GarminConnect {
         dir: string,
         type: ExportFileTypeValue = 'zip'
     ): Promise<void> {
-        if (!activity.activityId) throw new Error('Missing activityId');
-        if (!checkIsDirectory(dir)) {
-            createDirectory(dir);
-        }
-        let fileBuffer: Buffer;
-        if (type === 'tcx') {
-            fileBuffer = await this.client.get(
-                this.url.DOWNLOAD_TCX + activity.activityId
-            );
-        } else if (type === 'gpx') {
-            fileBuffer = await this.client.get(
-                this.url.DOWNLOAD_GPX + activity.activityId
-            );
-        } else if (type === 'kml') {
-            fileBuffer = await this.client.get(
-                this.url.DOWNLOAD_KML + activity.activityId
-            );
-        } else if (type === 'zip') {
-            fileBuffer = await this.client.get<Buffer>(
-                this.url.DOWNLOAD_ZIP + activity.activityId,
-                {
-                    responseType: 'arraybuffer'
-                }
-            );
-        } else {
-            throw new Error(
-                'downloadOriginalActivityData - Invalid type: ' + type
-            );
-        }
-        writeToFile(
-            path.join(dir, `${activity.activityId}.${type}`),
-            fileBuffer
+        console.error(
+            'Downloading original activity data is not supported in Cloudflare Workers.'
         );
+        // if (!activity.activityId) throw new Error('Missing activityId');
+        // if (!checkIsDirectory(dir)) {
+        //     createDirectory(dir);
+        // }
+        // let fileBuffer: Buffer;
+        // if (type === 'tcx') {
+        //     fileBuffer = await this.client.get(
+        //         this.url.DOWNLOAD_TCX + activity.activityId
+        //     );
+        // } else if (type === 'gpx') {
+        //     fileBuffer = await this.client.get(
+        //         this.url.DOWNLOAD_GPX + activity.activityId
+        //     );
+        // } else if (type === 'kml') {
+        //     fileBuffer = await this.client.get(
+        //         this.url.DOWNLOAD_KML + activity.activityId
+        //     );
+        // } else if (type === 'zip') {
+        //     fileBuffer = await this.client.get<Buffer>(
+        //         this.url.DOWNLOAD_ZIP + activity.activityId,
+        //         {
+        //             responseType: 'arraybuffer'
+        //         }
+        //     );
+        // } else {
+        //     throw new Error(
+        //         'downloadOriginalActivityData - Invalid type: ' + type
+        //     );
+        // }
+        // writeToFile(
+        //     path.join(dir, `${activity.activityId}.${type}`),
+        //     fileBuffer
+        // );
     }
 
     async uploadActivity(
         file: string,
         format: UploadFileTypeTypeValue = 'fit'
     ) {
-        const detectedFormat = (format || path.extname(file))?.toLowerCase();
-        if (!_.includes(UploadFileType, detectedFormat)) {
-            throw new Error('uploadActivity - Invalid format: ' + format);
-        }
-
-        const fileBuffer = fs.createReadStream(file);
-        const form = new FormData();
-        form.append('userfile', fileBuffer);
-        const response = await this.client.post(
-            this.url.UPLOAD + '.' + format,
-            form,
-            {
-                headers: {
-                    'Content-Type': form.getHeaders()['content-type']
-                }
-            }
+        console.error(
+            'Uploading activity is not supported in Cloudflare Workers.'
         );
-        return response;
+        // const detectedFormat = (format || path.extname(file))?.toLowerCase();
+        // if (!_.includes(UploadFileType, detectedFormat)) {
+        //     throw new Error('uploadActivity - Invalid format: ' + format);
+        // }
+
+        // const fileBuffer = fs.createReadStream(file);
+        // const form = new FormData();
+        // form.append('userfile', fileBuffer);
+        // const response = await this.client.post(
+        //     this.url.UPLOAD + '.' + format,
+        //     form,
+        //     {
+        //         headers: {
+        //             'Content-Type': form.getHeaders()['content-type']
+        //         }
+        //     }
+        // );
+        // return response;
     }
 
     async deleteActivity(activity: {
